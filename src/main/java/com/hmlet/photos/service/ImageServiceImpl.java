@@ -69,4 +69,25 @@ public class ImageServiceImpl implements ImageService {
 
 	}
 
+	//Deletes image file from the File System
+	@Override
+	public boolean deleteImage(Long imageId) {
+		boolean deleted = false;
+		try {
+			if(Files.deleteIfExists(getPath(imageId))) {
+				imageRepo.deleteImageInfo(imageId);
+				deleted = true;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return deleted;
+		
+	}
+
+	//Return Path of image by ImageID
+	public Path getPath(Long imageID) {
+		Path path = Paths.get(imageRepo.getImageLocation(imageID));
+		return path;
+	}
 }

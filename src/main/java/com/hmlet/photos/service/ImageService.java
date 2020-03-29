@@ -9,4 +9,5 @@ public interface ImageService {
 	void saveImagetoDisk(MultipartFile image,Path path);
 	void saveImageInfo(String imageName, String caption, String path);
 	void editCaption(String caption, Long imageID);
+	boolean deleteImage(Long imageId);
 }

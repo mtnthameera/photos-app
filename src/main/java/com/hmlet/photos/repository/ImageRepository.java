@@ -15,4 +15,12 @@ public interface ImageRepository extends CrudRepository<Image, String>{
 	@Transactional
 	@Query("update Image img set img.caption = ?1 where img.id = ?2")
 	int updateCaption(String caption, Long imageId);
+	
+	@Query("select img.imagePath from Image img where img.id = ?1")
+	String getImageLocation(Long imageId);
+	
+	@Modifying
+	@Transactional
+	@Query("delete from Image img where img.id= ?1")
+	void deleteImageInfo(Long imageId);
 }
