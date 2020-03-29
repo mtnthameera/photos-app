@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,12 +33,18 @@ ImageService imageService;
 	Logger log = LoggerFactory.getLogger(PhotosController.class);
 	
 	@PostMapping("/upload")
-	public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile imageFile) {
+	public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile imageFile, @RequestParam("caption") String caption) {
 		
 		log.info("***** uploadfilemethod");
-		imageService.saveImageWithCaption(imageFile,"G-wagon");
+		imageService.saveImageWithCaption(imageFile, caption);
 		log.info("sending response");
 		return new ResponseEntity<>("Image Saved Successfully", HttpStatus.OK);
 	}
 	
+	
+	@PutMapping("/editCaption")
+	public ResponseEntity<String> editCaption(@RequestParam("caption") String caption, @RequestParam("imageID") Long id){
+		imageService.editCaption(caption, id);
+		return new ResponseEntity<>("Caption Upadated",HttpStatus.OK);
+	}
 }

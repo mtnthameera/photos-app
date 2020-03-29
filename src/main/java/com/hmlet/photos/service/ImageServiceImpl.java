@@ -33,7 +33,7 @@ public class ImageServiceImpl implements ImageService {
 		String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
 		Path path = Paths.get(basePath, fileName);
 		saveImagetoDisk(imageFile, path);
-		saveImageInfo(fileName, caption);
+		saveImageInfo(fileName, caption, path.toString());
 	}
 
 	@Override
@@ -50,12 +50,22 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public void saveImageInfo(String imageName, String caption) {
+	public void saveImageInfo(String imageName, String caption, String path) {
 		log.info("inside save image info");
-        Image imageModle = new Image();
-        imageModle.setName(imageName);
-        imageModle.setCaption(caption);
+		Image imageModle = new Image();
+		imageModle.setName(imageName);
+		imageModle.setCaption(caption);
+		imageModle.setImagePath(path);
+		imageRepo.save(imageModle);
 		log.info("done save image info");
+
+	}
+
+	@Override
+	public void editCaption(String caption, Long imageID) {
+		log.info("edit catption starting");
+		imageRepo.updateCaption(caption,imageID);
+		log.info("caption edited");
 
 	}
 
