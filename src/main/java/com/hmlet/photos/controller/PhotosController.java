@@ -61,7 +61,7 @@ public class PhotosController {
 	}
 
 	@GetMapping("/photo/user/{userId}")
-	public ResponseEntity<List<String>> filterImageByUser(@PathVariable("imageId") Long userId) {
+	public ResponseEntity<List<String>> filterImageByUser(@PathVariable("userId") Long userId) {
 		List<String> resourceList = imageService.getImageListByUser(userId);
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/json")).body(resourceList);
 	}
