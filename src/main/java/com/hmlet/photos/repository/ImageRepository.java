@@ -1,5 +1,7 @@
 package com.hmlet.photos.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -23,4 +25,8 @@ public interface ImageRepository extends CrudRepository<Image, String>{
 	@Transactional
 	@Query("delete from Image img where img.id= ?1")
 	void deleteImageInfo(Long imageId);
+	
+	@Query("select img.id from Image img where img.userId = ?1")
+    List<Long> getImageIdListForUser(Long Id);
+	
 }
