@@ -1,22 +1,30 @@
 package com.hmlet.photos.service;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
-	void saveImageWithCaption(MultipartFile image, String caption);
-	void saveImagetoDisk(MultipartFile image,Path path);
-	void saveImageInfo(String imageName, String caption, String path);
+	
+	void saveImageWithCaption(MultipartFile image, String caption, boolean draft);
+
+	void saveImagetoDisk(MultipartFile image, Path path);
+
 	void editCaption(String caption, Long imageID);
+
 	boolean deleteImage(Long imageId);
-	//Resource getImageAsResource(Long imageId);
-	//List<Resource> getImageListByUser(Long userId); 
+
 	List<String> getImageListByUser(Long userId);
-	
+
 	String getPathLink(Long imageId);
-	
-	String getSortedImageList();
+
+	List<String> getSortedImageList(String sortOrder);
+
+	List<String> getPhotos(String type);
+
+	void saveImageInfo(String imageName, String caption, String path, boolean draft);
+
+	boolean validateImage(MultipartFile imageFile) throws IOException;
 }

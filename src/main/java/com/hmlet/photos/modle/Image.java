@@ -31,9 +31,12 @@ public class Image {
 
 	@Column(name = "userid", nullable = false)
 	private Long userId;
-	
+
+	@Column(name = "draft", columnDefinition = "BOOLEAN")
+	private boolean draft;
+
 	@CreationTimestamp
-    private LocalDateTime createDateTime;
+	private LocalDateTime publishTime;
 
 	public Long getUserId() {
 		return userId;
@@ -75,4 +78,11 @@ public class Image {
 		this.imagePath = imagePath;
 	}
 
+	public boolean getDraft() {
+		return draft;
+	}
+
+	public void setDraft(boolean draft) {
+		this.draft = draft;
+	}
 }

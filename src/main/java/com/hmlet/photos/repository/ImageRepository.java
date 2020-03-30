@@ -29,4 +29,20 @@ public interface ImageRepository extends CrudRepository<Image, String>{
 	@Query("select img.id from Image img where img.userId = ?1")
     List<Long> getImageIdListForUser(Long Id);
 	
+	@Query("select img.id from Image img order by img.publishTime ASC")
+	List<Long> getSortedImageListASC();
+	
+	@Query("select img.id from Image img order by img.publishTime DESC")
+	List<Long> getSortedImageListDESC();
+	
+	@Query("select img.id from Image img ")
+    List<Long> getAllPhotos();
+	
+	@Query("select img.id from Image img where img.userId = ?1")
+    List<Long> getMyPhotos(Long Id);
+	
+	@Query("select img.id from Image img where img.draft = 1")
+    List<Long> getDraftPhotos();
+	
+	
 }

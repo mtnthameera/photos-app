@@ -2,6 +2,8 @@ package com.hmlet.photos.controller;
 
 import java.util.List;
 
+import javax.websocket.server.PathParam;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,38 +34,42 @@ public class PhotosController {
 
 	Logger log = LoggerFactory.getLogger(PhotosController.class);
 
-	@PostMapping("/upload")
-	public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile imageFile,
-			@RequestParam("caption") String caption) {
-
-		log.info("***** uploadfilemethod");
-		imageService.saveImageWithCaption(imageFile, caption);
-		log.info("sending response");
-		return new ResponseEntity<>("Image Saved Successfully", HttpStatus.OK);
+	@PostMapping("/photo")
+	public ResponseEntity<String> uploadImage(@RequestParam("photo") MultipartFile imageFile,
+			@RequestParam("caption") String caption, @RequestParam("draft") boolean draft) {
+		imageService.saveImageWithCaption(imageFile, caption, draft);
+		return new ResponseEntity<>("Image Saved Successfully...", HttpStatus.OK);
 	}
 
-	@PutMapping("/editCaption")
+	@PutMapping("/photo/{imageId}/caption")
 	public ResponseEntity<String> editCaption(@RequestParam("caption") String caption,
-			@RequestParam("imageID") Long id) {
+			@PathVariable("imageId") Long id) {
 		imageService.editCaption(caption, id);
-		return new ResponseEntity<>("Caption Upadated", HttpStatus.OK);
+		return new ResponseEntity<>("Caption Upadated...", HttpStatus.OK);
 	}
 
-	@DeleteMapping("/delete")
-	public ResponseEntity<String> deletePhoto(@RequestParam("imageID") Long id) {
+	@DeleteMapping("/photo/{imageId}")
+	public ResponseEntity<String> deletePhoto(@PathVariable("imageId") Long id) {
 		imageService.deleteImage(id);
-		return new ResponseEntity<>("Image Deleted", HttpStatus.OK);
+		return new ResponseEntity<>("Image Deleted...", HttpStatus.OK);
 	}
 
-	@GetMapping("/getimage")
-	public ResponseEntity<String> getImage(@RequestParam("imageID") Long id) {
-		String resource = imageService.getPathLink(id);
+	@GetMapping("/photo/{type}")
+	public ResponseEntity<List<String>> getImage(@PathVariable("type") String type) {
+		List<String> resource = imageService.getPhotos(type);
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/json")).body(resource);
 	}
 
-	@GetMapping("/imagesforuser")
-	public ResponseEntity<List<String>> filterImageByUser(@RequestParam("userId") Long userId) {
-		List<String> resourceList= imageService.getImageListByUser(userId);
+	@GetMapping("/photo/user/{userId}")
+	public ResponseEntity<List<String>> filterImageByUser(@PathVariable("imageId") Long userId) {
+		List<String> resourceList = imageService.getImageListByUser(userId);
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/json")).body(resourceList);
 	}
+
+	@GetMapping("/photo/sort/{order}")
+	public ResponseEntity<List<String>> getOrderedImageList(@PathVariable("order") String order) {
+		List<String> resourceList = imageService.getSortedImageList(order);
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/json")).body(resourceList);
+	}
+
 }

@@ -1,7 +1,7 @@
 package com.hmlet.photos.service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,12 +9,12 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,17 +29,28 @@ public class ImageServiceImpl implements ImageService {
 	@Value("${image.basepath}")
 	String basePath;
 
+	@Value("${image.maxheight}")
+	int maxHeight;
+
+	@Value("${image.maxwidth}")
+	int maxWidth;
+
 	@Autowired
 	ImageRepository imageRepo;
 
 	Logger log = LoggerFactory.getLogger(ImageServiceImpl.class);
 
 	@Override
-	public void saveImageWithCaption(MultipartFile imageFile, String caption) {
-		String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
-		Path path = Paths.get(basePath, fileName);
-		saveImagetoDisk(imageFile, path);
-		saveImageInfo(fileName, caption, path.toString());
+	public void saveImageWithCaption(MultipartFile imageFile, String caption, boolean draft) {
+		if (validateImage(imageFile)) {
+
+			String fileName = StringUtils.cleanPath(imageFile.getOriginalFilename());
+			Path path = Paths.get(basePath, fileName);
+			saveImagetoDisk(imageFile, path);
+			saveImageInfo(fileName, caption, path.toString(), draft);
+		} else {
+			throw new RuntimeException("Invalid file!");
+		}
 	}
 
 	@Override
@@ -56,12 +67,13 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	@Override
-	public void saveImageInfo(String imageName, String caption, String path) {
+	public void saveImageInfo(String imageName, String caption, String path, boolean draft) {
 		log.info("inside save image info");
 		Image imageModle = new Image();
 		imageModle.setName(imageName);
 		imageModle.setCaption(caption);
 		imageModle.setImagePath(path);
+		imageModle.setDraft(draft);
 		// TODO : User ID is hardcoded.
 		imageModle.setUserId((long) 123);
 		imageRepo.save(imageModle);
@@ -99,15 +111,6 @@ public class ImageServiceImpl implements ImageService {
 		return path;
 	}
 
-	/*
-	 * @Override public Resource getImageAsResource(Long imageId) { Path path =
-	 * getPath(imageId); try { Resource resource = new UrlResource(path.toUri());
-	 * return resource; } catch (MalformedURLException e) { // TODO Auto-generated
-	 * catch block e.printStackTrace(); } return null; }
-	 */
-
-	// Get all images belong to user
-
 	@Override
 	public List<String> getImageListByUser(Long userId) {
 		List<String> imageList = new ArrayList<>();
@@ -120,14 +123,64 @@ public class ImageServiceImpl implements ImageService {
 	// return link to image
 	@Override
 	public String getPathLink(Long imageId) {
-		return ServletUriComponentsBuilder.fromCurrentContextPath().path(imageRepo.getImageLocation(imageId)).toUriString();
+		return ServletUriComponentsBuilder.fromCurrentContextPath().path(imageRepo.getImageLocation(imageId))
+				.toUriString();
 
 	}
 
 	@Override
-	public String getSortedImageList() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> getSortedImageList(String order) {
+		List<String> imageList = new ArrayList<>();
+		if (order.equals("asc")) {
+			for (Long imageId : imageRepo.getSortedImageListASC()) {
+				imageList.add(getPathLink(imageId));
+			}
+		} else if (order.equals("desc")) {
+			for (Long imageId : imageRepo.getSortedImageListDESC()) {
+				imageList.add(getPathLink(imageId));
+			}
+		}
+		return imageList;
+	}
+
+	// Handle getPhotos request based on the requested category.
+	@Override
+	public List<String> getPhotos(String type) {
+		List<String> imageList = new ArrayList<>();
+
+		if (type.equals("all")) {
+			for (Long imageId : imageRepo.getAllPhotos()) {
+				imageList.add(getPathLink(imageId));
+			}
+		}
+		if (type.equals("draft")) {
+			// TODO draft list
+			for (Long imageId : imageRepo.getDraftPhotos()) {
+				imageList.add(getPathLink(imageId));
+			}
+		}
+		if (type.equals("myphotos")) {
+			// TODO draft list
+			for (Long imageId : imageRepo.getMyPhotos((long) 123)) {
+				imageList.add(getPathLink(imageId));
+			}
+		}
+		return imageList;
+
+	}
+
+	@Override
+	public boolean validateImage(MultipartFile imageFile) {
+		boolean validUpload = false;
+		try {
+			BufferedImage image = ImageIO.read(imageFile.getInputStream());
+			if (image.getHeight() <= maxHeight && image.getWidth() <= maxWidth) {
+				validUpload = true;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return validUpload;
 	}
 
 }
